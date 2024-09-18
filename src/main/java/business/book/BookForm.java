@@ -33,15 +33,6 @@ package business.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * A book request arriving in an order form from the client.
- * Contains just enough information to validate the book
- * requested against the book catalog in the database.
- *
- * (We ignore any extra elements that the client sends
- *  that this class does not require, for example
- *  "lastUpdatedDate").
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BookForm {
 
@@ -49,7 +40,6 @@ public class BookForm {
     private int price;
     private long categoryId;
 
-    // This is important - it is used during JSON deserialization.
 	public BookForm() {
 	}
 

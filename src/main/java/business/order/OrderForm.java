@@ -3,10 +3,6 @@ package business.order;
 import business.cart.ShoppingCart;
 import business.customer.CustomerForm;
 
-/**
- * An order form arrives as JSON from the client and
- * is de-serialized into an instance of this class.
- */
 public class OrderForm {
 
 	private ShoppingCart cart;

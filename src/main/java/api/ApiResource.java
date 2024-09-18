@@ -1,10 +1,13 @@
 package api;
 
 import business.ApplicationContext;
-import business.category.Category;
-import business.category.CategoryDao;
 import business.book.Book;
 import business.book.BookDao;
+import business.category.Category;
+import business.category.CategoryDao;
+import business.order.OrderDetails;
+import business.order.OrderForm;
+import business.order.OrderService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -18,6 +21,7 @@ public class ApiResource {
 
     private final BookDao bookDao = ApplicationContext.INSTANCE.getBookDao();
     private final CategoryDao categoryDao = ApplicationContext.INSTANCE.getCategoryDao();
+    private final OrderService orderService = ApplicationContext.INSTANCE.getOrderService();
 
     @GET
     @Path("categories")
@@ -91,10 +95,80 @@ public class ApiResource {
         }
     }
 
-    // TODO Implement the following APIs
-    // categories/name/{category-name}
-    // categories/name/{category-name}/books
-    // categories/name/{category-name}/suggested-books
-    // categories/name/{category-name}/suggested-books?limit=#
 
+    @GET
+    @Path("categories/name/{category-name}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Category categoryByName(
+            @PathParam("category-name") String categoryName,
+            @Context HttpServletRequest httpRequest) {
+        try {
+            Category category = categoryDao.findByName(categoryName);
+            if (category == null) {
+                throw new ApiException(String.format("No such category name: %s", categoryName));
+            }
+            return categoryDao.findByName(category.getName());
+        } catch (Exception e) {
+            throw new ApiException(String.format("Books lookup by category-name %s failed", categoryName), e);
+        }
+    }
+    @GET
+    @Path("categories/name/{category-name}/books")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Book> booksByCategoryName(
+            @PathParam("category-name") String categoryName,
+            @Context HttpServletRequest httpRequest) {
+
+        try {
+            Category category = categoryDao.findByName(categoryName);
+            if (category == null) {
+                throw new ApiException(String.format("No such category name: %s", categoryName));
+            }
+            return bookDao.findByCategoryId(category.getCategoryId());
+        } catch (Exception e) {
+            throw new ApiException(String.format("Books lookup by category-name %s failed", categoryName), e);
+        }
+    }
+
+    @GET
+    @Path("categories/name/{category-name}/suggested-books")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Book> suggestedBooksByCategoryName(@PathParam("category-name") String name,
+                                          @QueryParam("limit") @DefaultValue("3") int limit,
+                                          @Context HttpServletRequest request) {
+
+        try {
+            Category category = categoryDao.findByName(name);
+            if (category == null) {
+                throw new ApiException(String.format("No such category name: %s", name));
+            }
+            return bookDao.findRandomByCategoryId(category.getCategoryId(), limit);
+        } catch (Exception e) {
+            throw new ApiException(String.format("Random Books lookup by category-name %s failed", name), e);
+        }
+    }
+
+    @POST
+    @Path("orders")
+    @Consumes(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+    @Produces(javax.ws.rs.core.MediaType.APPLICATION_JSON)
+    public OrderDetails placeOrder(OrderForm orderForm) {
+
+        try {
+            long orderId = orderService.placeOrder(orderForm.getCustomerForm(), orderForm.getCart());
+            if (orderId > 0) {
+                return orderService.getOrderDetails(orderId);
+            } else {
+                throw new ApiException.ValidationFailure("order placement failed");
+            }
+
+        } catch (ApiException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ApiException("Unknown error occurred", e);
+        }
+    }
 }
+
+
+

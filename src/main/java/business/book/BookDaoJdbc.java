@@ -1,8 +1,7 @@
 package business.book;
 
-import business.BookstoreDbException;
+import business.BookstoreDbException.BookstoreQueryDbException;
 import business.JdbcUtils;
-import business.category.Category;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import business.BookstoreDbException.BookstoreQueryDbException;
 
 public class BookDaoJdbc implements BookDao {
 
@@ -19,8 +17,11 @@ public class BookDaoJdbc implements BookDao {
                     "FROM book " +
                     "WHERE book_id = ?";
 
-    private static final String FIND_BY_CATEGORY_ID_SQL = "";
-    // TODO Implement this constant to be used in the findByCategoryId method
+    private static final String FIND_BY_CATEGORY_ID_SQL =
+            "SELECT book_id, title, author, price, is_public, category_id " +
+                    "FROM book " +
+                    "WHERE category_id = ?";
+
 
     private static final String FIND_RANDOM_BY_CATEGORY_ID_SQL =
             "SELECT book_id, title, author, price, is_public, category_id " +
@@ -50,7 +51,17 @@ public class BookDaoJdbc implements BookDao {
     public List<Book> findByCategoryId(long categoryId) {
         List<Book> books = new ArrayList<>();
 
-        // TODO: Implement this method.
+        try(Connection connection = JdbcUtils.getConnection();
+            PreparedStatement statement = connection.prepareStatement(FIND_BY_CATEGORY_ID_SQL)) {
+            statement.setLong(1, categoryId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    books.add(readBook(resultSet));
+                }
+            }
+        }catch (SQLException e){
+            throw new BookstoreQueryDbException("Encountered a problem finding book associated with category " + categoryId, e);
+        }
 
         return books;
     }
@@ -58,9 +69,18 @@ public class BookDaoJdbc implements BookDao {
     @Override
     public List<Book> findRandomByCategoryId(long categoryId, int limit) {
         List<Book> books = new ArrayList<>();
-
-        // TODO Implement this method
-
+        try(Connection connection = JdbcUtils.getConnection();
+            PreparedStatement statement = connection.prepareStatement(FIND_RANDOM_BY_CATEGORY_ID_SQL)) {
+            statement.setLong(1, categoryId);
+            statement.setInt(2, limit);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    books.add(readBook(resultSet));
+                }
+            }
+        }catch (SQLException e){
+            throw new BookstoreQueryDbException("Encountered a problem finding book associated with category " + categoryId, e);
+        }
         return books;
     }
 

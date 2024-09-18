@@ -1,16 +1,17 @@
 package business;
 
+import business.BookstoreDbException.BookstoreConnectionDbException;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import business.BookstoreDbException.BookstoreConnectionDbException;
 
 public class JdbcUtils {
 
-    private static final String JDBC_BOOKSTORE = "jdbc/DrKBookstore";
+    private static final String JDBC_BOOKSTORE = "jdbc/FrancisBookstore";
 
     private static DataSource dataSource;
 

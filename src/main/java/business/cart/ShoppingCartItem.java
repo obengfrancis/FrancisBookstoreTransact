@@ -17,9 +17,6 @@ public class ShoppingCartItem {
 
 	private int quantity;
 
-	// Client sends "product", which we deserialize as a
-	// "product form" to distinguish it as incoming product
-	// rather than a full Product model.
 	@JsonProperty("book")
 	private BookForm bookForm;
 
@@ -41,14 +38,14 @@ public class ShoppingCartItem {
 	public void setBookForm(BookForm bookForm) {
 		this.bookForm = bookForm;
 	}
-
-	/**
-	 * A quick accessor for getting the book id for this item.
-	 * @return the id of the book in this cart item
-	 */
 	@JsonIgnore
 	public long getBookId() {
 		return bookForm.getBookId();
 	}
 
+	public int getPrice() {
+		return bookForm.getPrice();
+	}
+	public long getCategoryId() {return bookForm.getCategoryId();
+	}
 }
